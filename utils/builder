@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# Simple BUILDER wrapper to run commands in an BUILDER docker container
+#
+# Author: Kyle Manna <kyle@kylemanna.com> from docker-aosp
+# Author: Frederic Germain <frederic.germain@gmail.com>
+#
+
+set -e
+set -x
+# Override from environment
+BUILDER_PROGRAM=vlc-android
+BUILDER_IMAGE=${BUILDER_IMAGE:-fredericgermain/builder-$BUILDER_PROGRAM}
+BUILDER_ARGS=${BUILDER_ARGS:---rm -it}
+
+BUILDER_VOL=${BUILDER_VOL:-~/builder-root}
+BUILDER_VOL=${BUILDER_VOL%/} # Trim trailing slash if needed
+BUILDER_VOL_BUILDER=${BUILDER_VOL_BUILDER:-$BUILDER_VOL/$BUILDER_PROGRAM}
+BUILDER_VOL_BUILDER=${BUILDER_VOL_BUILDER%/} # Trim trailing slash if needed
+BUILDER_VOL_CCACHE=${BUILDER_VOL_CCACHE:-$BUILDER_VOL/ccache}
+BUILDER_VOL_CCACHE=${BUILDER_VOL_CCACHE%/} # Trim trailing slash if needed
+BUILDER_VOL_LIC=${BUILDER_VOL_LIC:-$BUILDER_VOL/android-sdk-licenses}
+BUILDER_VOL_LIC=${BUILDER_VOL_LIC%/} # Trim trailing slash if needed
+
+# Convenience function
+function builder_create_dir_if_needed {
+  directory=$1
+  msg="builder: Checking if $directory exists"
+  echo "$msg"
+  if [ ! -d "$directory" ]; then
+    echo "$msg - unexistent"
+    msg="Creating $directory"
+    echo "$msg"
+    mkdir -p $directory
+  fi
+  echo "$msg - ok"
+}
+
+# Create BUILDER_VOL_BUILDER
+builder_create_dir_if_needed $BUILDER_VOL_BUILDER
+builder_create_dir_if_needed $BUILDER_VOL_CCACHE
+
+# Set uid and gid to match host current user
+BUILDER_HOST_ID_ARGS="-e USER_ID=$(id -u) -e GROUP_ID=$(id -g)"
+
+if [ -n "$SSH_AUTH_SOCK" ]; then
+    SSH_AUTH_ARGS="-v $SSH_AUTH_SOCK:/tmp/ssh_auth -e SSH_AUTH_SOCK=/tmp/ssh_auth"
+fi
+
+echo ""
+
+docker run $BUILDER_ARGS $BUILDER_HOST_ID_ARGS $SSH_AUTH_ARGS $BUILDER_EXTRA_ARGS \
+    -v "$BUILDER_VOL_BUILDER:/vlc-android" -v "$BUILDER_VOL_CCACHE:/tmp/ccache" \
+    -v "$BUILDER_VOL_LIC:/opt/android-sdk-linux/licenses" \
+    $BUILDER_IMAGE $@
