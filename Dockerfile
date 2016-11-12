@@ -33,35 +33,36 @@ RUN apt-get install -y wget openjdk-8-jre-headless expect unzip \
 #ENV ANDROID_API_LEVELS android-15,android-16,android-17,android-18,android-19,android-20,android-21 
 #ENV ANDROID_BUILD_TOOLS_VERSION 21.1.0
 # need apt wget openjdk-8-jre-headless expect 
-ENV ANDROID_SDK_FILENAME android-sdk_r24.3.4-linux.tgz
-ENV ANDROID_SDK_URL http://dl.google.com/android/${ANDROID_SDK_FILENAME}
-ENV ANDROID_API_LEVELS android-24 
-ENV ANDROID_BUILD_TOOLS_VERSION 24.0.1
-ENV ANDROID_LICENSES android-sdk-license-c81a61d9
+ARG ANDROID_SDK_FILENAME=android-sdk_r24.3.4-linux.tgz
+ARG ANDROID_SDK_URL=http://dl.google.com/android/${ANDROID_SDK_FILENAME}
+ARG ANDROID_API_LEVELS=android-24 
+ARG ANDROID_BUILD_TOOLS_VERSION=24.0.1
+ENV ANDROID_SDK_PACKAGES=tools,platform-tools,${ANDROID_API_LEVELS},build-tools-${ANDROID_BUILD_TOOLS_VERSION},extra-android-m2repository
+ENV ANDROID_SDK_LICENSES android-sdk-license-c81a61d9
 ENV ANDROID_SDK /opt/android-sdk-linux
 ENV PATH ${PATH}:${ANDROID_SDK}/tools:${ANDROID_SDK}/platform-tools
 RUN cd /opt && \
     wget -q ${ANDROID_SDK_URL} && \
     tar -xzf ${ANDROID_SDK_FILENAME} && \
     rm ${ANDROID_SDK_FILENAME} && \
-    accept-licenses "android update sdk --no-ui -a --filter tools,platform-tools,${ANDROID_API_LEVELS},build-tools-${ANDROID_BUILD_TOOLS_VERSION},extra-android-m2repository" "${ANDROID_LICENSES}" && \
-    true || for lic in /opt/android-sdk-linux/licenses/*; do echo ">>>>>>> $lic"; cat $lic; echo; rm $lic; done
+    accept-licenses "android update sdk --no-ui -a --filter ${ANDROID_SDK_PACKAGES}" "${ANDROID_SDK_LICENSES}"
 
 # need apt wget unzip 
-ENV ANDROID_NDK_VERSION r13
+ARG ANDROID_NDK_VERSION=r13
+ENV ANDROID_NDK /opt/android-ndk-${ANDROID_NDK_VERSION}
 RUN cd /opt && \
     wget -q https://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
     unzip android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
     rm android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip
 
 # All builds will be done by user builder
+RUN mkdir -p /home/builder
 COPY gitconfig /root/.gitconfig
 COPY ssh_config /root/.ssh/config
-COPY bash_aliases /root/.bash_aliases
 
 # The persistent data will be in these two directories, everything else is
 # considered to be ephemeral
-VOLUME ["/tmp/ccache", "/aosp"]
+VOLUME ["/tmp/ccache", "/vlc-android"]
 
 # need apt sudo
 COPY utils/docker_entrypoint.sh /root/docker_entrypoint.sh

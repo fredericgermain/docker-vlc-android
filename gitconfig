@@ -2,5 +2,5 @@
 [color]
 	ui = auto
 [user]
-	name = Docker AOSP
-	email = aosp@aosp.docker.local
+	name = Docker Builder vlc-android
+	email = vlc-android@vlc-android.docker.local

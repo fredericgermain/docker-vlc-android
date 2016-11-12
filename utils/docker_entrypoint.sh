@@ -20,14 +20,13 @@ if [ -z ${GROUP_ID+x} ]; then GROUP_ID=1000; fi
 msg="docker_entrypoint: Creating user UID/GID [$USER_ID/$GROUP_ID]" && echo $msg
 groupadd -g $GROUP_ID -r builder && \
 useradd -u $USER_ID --create-home -r -g builder builder
-usermod -aG sudo builder
+chown builder:builder /home/builder
+# make sudo works. for now, sudo needs builder password which is not set
+echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder 
+# usermod -aG sudo builder
 echo "$msg - done"
 
-msg="docker_entrypoint: Copying .bash_aliases, .gitconfig and .ssh/config to new user home" && echo $msg
-cp /root/.bash_aliases /home/builder/.bash_aliases && \
-chown builder:builder /home/builder/.bash_aliases && \
-cp /root/.gitconfig /home/builder/.gitconfig && \
-chown builder:builder /home/builder/.gitconfig && \
+msg="docker_entrypoint: Copying .ssh/config to new user home" && echo $msg
 mkdir -p /home/builder/.ssh && \
 cp /root/.ssh/config /home/builder/.ssh/config && \
 chown builder:builder -R /home/builder/.ssh &&
@@ -46,12 +45,10 @@ if [ -z "$args" ]; then
   args="bash"
 fi
 
-export ANDROID_SDK=/opt/android-sdk-linux
-export ANDROID_NDK=/opt/android-ndk-r13
-export PATH=$PATH:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools 
+#bash -c export
 
 # Execute command as `builder` user
-export HOME=/home/builder
-exec sudo -u builder $args
-# ~/.profile: executed by Bourne-compatible login shells.
+# env "PATH=$PATH" because otherwise sudo set PATH with secure_path in /etc/sudouers
+# $HOME/.bashrc: executed by bash, default 'builder' user shell
+exec sudo -E -u builder env "PATH=$PATH" "HOME=/home/builder" $args
 
