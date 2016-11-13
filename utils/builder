@@ -26,6 +26,7 @@ BUILDER_VOL_LIC=${BUILDER_VOL_LIC:-$BUILDER_VOL/android-sdk-licenses}
 BUILDER_VOL_LIC=${BUILDER_VOL_LIC%/} # Trim trailing slash if needed
 BUILDER_VOL_GRADLE=${BUILDER_VOL_GRADLE:-$BUILDER_VOL/gradle_cache}
 BUILDER_VOL_GITCONFIG=${BUILDER_VOL_GITCONFIG:-~/.gitconfig} # Trim trailing slash if needed
+BUILDER_VOL_ANDROID_SETTINGS=${BUILDER_VOL_ANDROID_SETTINGS:-~/.android} # Trim trailing slash if needed
 
 # Convenience function
 function builder_create_dir_if_needed {
@@ -59,5 +60,6 @@ docker run $BUILDER_ARGS $BUILDER_HOST_ID_ARGS $SSH_AUTH_ARGS $BUILDER_EXTRA_ARG
     -v "$BUILDER_VOL_BUILDER:/vlc-android" -v "$BUILDER_VOL_CCACHE:/tmp/ccache" \
     -v "$BUILDER_VOL_GITCONFIG:/home/builder/.gitconfig" \
     -v "$BUILDER_VOL_GRADLE:/home/builder/.gradle" \
+    -v "$BUILDER_VOL_ANDROID_SETTINGS:/home/builder/.android" \
     -v "$BUILDER_VOL_LIC:/opt/android-sdk-linux/licenses" \
     $BUILDER_IMAGE $@

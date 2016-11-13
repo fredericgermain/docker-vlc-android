@@ -62,7 +62,7 @@ COPY ssh_config /root/.ssh/config
 
 # The persistent data will be in these directories, everything else is
 # considered to be ephemeral
-VOLUME ["/tmp/ccache", "/vlc-android", "/home/builder/.gradle"]
+VOLUME ["/tmp/ccache", "/vlc-android", "/home/builder/.gradle" , "/home/builder/.android"]
 
 # need apt sudo
 COPY utils/docker_entrypoint.sh /root/docker_entrypoint.sh
