@@ -60,9 +60,9 @@ RUN mkdir -p /home/builder
 COPY gitconfig /root/.gitconfig
 COPY ssh_config /root/.ssh/config
 
-# The persistent data will be in these two directories, everything else is
+# The persistent data will be in these directories, everything else is
 # considered to be ephemeral
-VOLUME ["/tmp/ccache", "/vlc-android"]
+VOLUME ["/tmp/ccache", "/vlc-android", "/home/builder/.gradle"]
 
 # need apt sudo
 COPY utils/docker_entrypoint.sh /root/docker_entrypoint.sh
