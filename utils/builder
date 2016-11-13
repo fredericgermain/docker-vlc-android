@@ -10,7 +10,7 @@ set -e
 
 # Override from environment
 BUILDER_PROGRAM=vlc-android
-BUILDER_IMAGE=${BUILDER_IMAGE:-fredericgermain/builder-$BUILDER_PROGRAM}
+BUILDER_IMAGE=${BUILDER_IMAGE:-fredericgermain/docker-$BUILDER_PROGRAM}
 BUILDER_ARGS=${BUILDER_ARGS:---rm -it}
 
 BUILDER_VOL=${BUILDER_VOL:-~/${BUILDER_PROGRAM}-root}
